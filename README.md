@@ -16,19 +16,19 @@ Here’s a glimpse of the dashboard in action, showcasing its key features.
 
 **Main Dashboard with Draggable Grid Layout**
 *A complete overview of the selected trial, featuring KPI cards and dynamic charts. All elements can be rearranged by the user.*
-![Main Dashboard View](https://i.imgur.com/rL4YQYK.png)
+![Main Dashboard View](https://github.com/user-attachments/assets/a436c477-d607-426f-8f0e-edc69fc08162)
 
-**Interactive Cross-Filtering**
-*Clicking on a segment of one chart (e.g., "Female" in the Gender Distribution) instantly filters all other charts on the dashboard.*
-![Cross-Filtering in Action](https://i.imgur.com/your-screenshot-link-here.png)
+
 
 **Advanced Patient Data Table**
 *A dedicated view for all trial participants, featuring case-insensitive search and column sorting.*
-![Patient Data Table](https://i.imgur.com/O6L6w3D.png)
+![Patient Data Table](https://github.com/user-attachments/assets/cae5afdc-d796-48e1-b5c0-3f9be5e1eea4)
+
 
 **Custom Trial Creation**
 *A user-friendly form that allows users to create and analyze their own trials by simply pasting in CSV data.*
-![Create Trial Form](https://i.imgur.com/your-screenshot-link-here.png)
+![Create Trial Form](https://github.com/user-attachments/assets/23cd8d05-de28-40dd-9a2c-403211e83a71)
+
 
 ---
 
@@ -38,7 +38,6 @@ This application is packed with features designed to showcase modern web develop
 
 - **Multi-Trial Management:** Seamlessly switch between different clinical trial datasets using a sidebar dropdown.
 - **Dynamic Data Visualization:** Charts and KPIs instantly update to reflect the data from the currently selected trial.
-- **Interactive Cross-Filtering:** Click on the gender distribution chart to filter the entire dashboard by that demographic.
 - **Draggable & Resizable Grid:** Customize your view by dragging and resizing the dashboard cards into any layout you prefer, powered by `react-grid-layout`.
 - **Advanced Data Table:** The "Patients" page features a high-performance table with global case-insensitive search and column sorting, built with `TanStack Table`.
 - **Custom Trial Creation:** Users can add new trials to the application by filling out a form and pasting their own raw CSV data, which is parsed on the client side.
