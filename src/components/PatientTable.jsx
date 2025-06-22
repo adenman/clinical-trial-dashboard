@@ -62,6 +62,18 @@ const PatientTable = ({ data }) => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    // --- THIS IS THE FIX ---
+    // We are providing a custom, case-insensitive global filter function.
+    globalFilterFn: (row, columnId, filterValue) => {
+      const safeValue = (() => {
+        const value = row.getValue(columnId);
+        // Ensure the value is a string before calling toLowerCase
+        return typeof value === 'number' ? String(value) : value;
+      })();
+
+      // Now, compare the lowercase versions
+      return safeValue?.toLowerCase().includes(filterValue.toLowerCase());
+    },
   });
 
   return (

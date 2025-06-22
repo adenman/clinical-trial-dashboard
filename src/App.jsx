@@ -47,10 +47,9 @@ function App() {
     loadTrialData();
   }, [currentTrial]);
 
-  // This function updates the filter state
+  // This function updates the filter state for the dashboard
   const handleFilterChange = (key, value) => {
     setFilters(prevFilters => {
-      // If value is null, remove the key. Otherwise, set it.
       if (value === null) {
         const { [key]: _, ...rest } = prevFilters;
         return rest;
@@ -59,7 +58,7 @@ function App() {
     });
   };
 
-  // useMemo will re-calculate the filteredData only when the source data or filters change
+  // This memoized data is ONLY for the main dashboard to react to cross-filtering
   const filteredData = useMemo(() => {
     if (Object.keys(filters).length === 0) {
       return trialData;
@@ -92,20 +91,22 @@ function App() {
               <Route path="/" element={
                 <Dashboard 
                   trial={currentTrial} 
-                  data={filteredData} // Pass filtered data to the dashboard
+                  data={filteredData}
                   onFilterChange={handleFilterChange} 
                   activeFilters={filters}
                 />} 
               />
+              {/* --- THIS IS THE FIX --- */}
+              {/* The PatientList now receives the complete, unfiltered 'trialData' */}
               <Route path="/patients" element={
                 <PatientList 
-                  data={filteredData} // Pass filtered data to the patient list
+                  data={trialData}
                 />} 
               />
               <Route path="/patient/:patientId" element={
                 <PatientDetail 
                   trial={currentTrial} 
-                  data={trialData} // Pass the *unfiltered* data so it can always find a patient by ID
+                  data={trialData} // PatientDetail also needs the full dataset to find patients by ID
                 />} 
               />
               <Route path="/create-trial" element={
