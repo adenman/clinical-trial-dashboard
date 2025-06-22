@@ -1,0 +1,6 @@
+patientID,age,gender,race,treatmentArm,visitDate,bloodPressureChange,adverseEvent
+CST-101,55,Female,Caucasian,"CardiaStat 20mg",2025-03-10,-10.5,Dizziness
+CST-102,61,Male,Hispanic,Placebo,2025-03-11,-2.1,None
+CST-103,58,Female,Asian,"CardiaStat 20mg",2025-03-12,-12.3,Headache
+CST-104,52,Male,African American,"CardiaStat 20mg",2025-04-10,-11.8,Dizziness
+CST-105,60,Female,Caucasian,Placebo,2025-04-11,-1.5,None

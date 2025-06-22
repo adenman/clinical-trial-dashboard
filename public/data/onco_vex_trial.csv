@@ -1,0 +1,6 @@
+patientID,age,gender,race,treatmentArm,visitDate,tumorSizeChange,adverseEvent
+OVX-001,68,Male,Caucasian,"OncoVex 100mg",2025-01-15,-5.2,Fatigue
+OVX-002,71,Female,African American,Placebo,2025-01-16,0.5,None
+OVX-003,65,Male,Asian,"OncoVex 50mg",2025-01-17,-2.8,Nausea
+OVX-004,75,Female,Caucasian,"OncoVex 100mg",2025-02-15,-6.1,Fatigue
+OVX-005,62,Male,Hispanic,Placebo,2025-02-16,0.8,Headache

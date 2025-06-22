@@ -1,0 +1,16 @@
+patientID,age,gender,race,treatmentArm,visitDate,outcome1,adverseEvent
+P001,45,Male,Caucasian,Treatment A,2023-01-15,10.5,None
+P002,52,Female,African American,Placebo,2023-01-16,12.1,Headache
+P003,38,Male,Asian,Treatment A,2023-01-17,9.8,Nausea
+P004,61,Female,Caucasian,Treatment B,2023-01-18,15.2,None
+P005,49,Male,Hispanic,Placebo,2023-01-19,11.5,Dizziness
+P006,55,Female,Caucasian,Treatment A,2023-02-15,11.2,None
+P007,41,Male,African American,Placebo,2023-02-16,13.5,Headache
+P008,35,Female,Asian,Treatment A,2023-02-17,10.1,None
+P009,68,Male,Caucasian,Treatment B,2023-02-18,16.5,Fatigue
+P010,51,Female,Hispanic,Placebo,2023-02-19,12.8,None
+P011,47,Male,Caucasian,Treatment A,2023-03-15,10.8,Nausea
+P012,58,Female,African American,Placebo,2023-03-16,11.9,None
+P013,42,Male,Asian,Treatment A,2023-03-17,9.5,Headache
+P014,65,Female,Caucasian,Treatment B,2023-03-18,14.8,None
+P015,50,Male,Hispanic,Placebo,2023-03-19,11.0,Dizziness

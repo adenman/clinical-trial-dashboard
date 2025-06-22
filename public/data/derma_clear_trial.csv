@@ -1,0 +1,6 @@
+patientID,age,gender,race,treatmentArm,visitDate,lesionCount,adverseEvent
+DCT-201,28,Male,Asian,"DermaClear Cream",2025-05-01,15,Itching
+DCT-202,35,Female,Caucasian,Placebo Cream,2025-05-02,25,None
+DCT-203,24,Female,Hispanic,"DermaClear Cream",2025-05-03,12,Dry Skin
+DCT-204,31,Male,African American,"DermaClear Cream",2025-06-01,8,Itching
+DCT-205,29,Female,Caucasian,Placebo Cream,2025-06-02,23,None
