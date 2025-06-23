@@ -1,98 +1,90 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Bar, Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
-// A color palette for our dynamic lines
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F'];
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
+
+const COLORS = [
+    'rgb(136, 132, 216)', 'rgb(130, 202, 157)', 'rgb(255, 198, 88)',
+    'rgb(255, 128, 66)',  'rgb(0, 136, 254)',   'rgb(0, 196, 159)',
+];
 
 const OutcomesCharts = ({ data, trial }) => {
-  const [transformedLineData, setTransformedLineData] = useState([]);
-  const [treatmentArms, setTreatmentArms] = useState([]);
+  const [lineChartData, setLineChartData] = useState({ datasets: [] });
+  const [barChartData, setBarChartData] = useState({ datasets: [] });
 
   useEffect(() => {
-    // This effect will run when the component gets new data or a new trial
-    // --- 1. Get all unique treatment arms from the data ---
-    const arms = [...new Set(data.map(item => item.treatmentArm))];
-    setTreatmentArms(arms);
+    if (!data || data.length === 0) return;
 
-    // --- 2. Transform the data for the Line Chart ---
-    // We want to change the data from a "long" format to a "wide" format.
-    // From: { visitDate, treatmentArm, value }
-    // To:   { visitDate, "Arm A": value, "Arm B": value, "Placebo": value }
-    const groupedByDate = data.reduce((acc, item) => {
-      const date = new Date(item.visitDate).toLocaleDateString();
-      if (!acc[date]) {
-        acc[date] = { visitDate: date };
+    // --- Data Preparation ---
+    const lineLabels = [...new Set(data.map(item => new Date(item.visitDate).toLocaleDateString()))]
+                        .sort((a, b) => new Date(a) - new Date(b));
+    const arms = [...new Set(data.map(item => item.treatmentArm))];
+    const lineDatasets = arms.map((arm, index) => {
+      const armData = lineLabels.map(label => {
+        const found = data.find(d => new Date(d.visitDate).toLocaleDateString() === label && d.treatmentArm === arm);
+        return found ? found.outcomeValue : null;
+      });
+      return {
+        label: arm,
+        data: armData,
+        borderColor: COLORS[index % COLORS.length],
+        backgroundColor: COLORS[index % COLORS.length] + '80',
+        tension: 0.1,
+        spanGaps: true,
+      };
+    });
+    setLineChartData({ labels: lineLabels, datasets: lineDatasets });
+
+    const adverseEvents = data.reduce((acc, patient) => {
+      if (patient.adverseEvent && patient.adverseEvent !== 'None') {
+        acc[patient.adverseEvent] = (acc[patient.adverseEvent] || 0) + 1;
       }
-      // Use the dynamic outcomeMetric from the trial object
-      acc[date][item.treatmentArm] = item[trial.outcomeMetric];
       return acc;
     }, {});
-    
-    const transformed = Object.values(groupedByDate);
-    
-    // --- THE FIX ---
-    // This line sorts the data chronologically to ensure lines connect correctly.
-    transformed.sort((a, b) => new Date(a.visitDate) - new Date(b.visitDate));
-    
-    setTransformedLineData(transformed);
+    const barLabels = Object.keys(adverseEvents);
+    const barDataPoints = Object.values(adverseEvents);
+    setBarChartData({
+        labels: barLabels,
+        datasets: [{
+            data: barDataPoints,
+            backgroundColor: 'rgba(255, 198, 88, 0.6)',
+        }]
+    })
+  }, [data, trial]);
 
-  }, [data, trial]); // Re-run this logic if the data or trial changes
-
-  // Adverse Events Frequency (this logic can remain the same)
-  const adverseEventsData = data.reduce((acc, patient) => {
-    if (patient.adverseEvent && patient.adverseEvent !== 'None') {
-      const existingEvent = acc.find(item => item.name === patient.adverseEvent);
-      if (existingEvent) {
-        existingEvent.count++;
-      } else {
-        acc.push({ name: patient.adverseEvent, count: 1 });
-      }
-    }
-    return acc;
-  }, []);
+  // --- Chart Options ---
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
+    scales: { x: { grid: { display: false } } }
+  };
+  
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Adverse Events Chart */}
-      <div>
-        <h3 className="text-lg font-semibold mb-2 text-gray-700">Adverse Events Frequency</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={adverseEventsData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#ffc658" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Outcome Trend Chart (New and Improved) */}
-      <div>
-        <h3 className="text-lg font-semibold mb-2 text-gray-700">{trial.outcomeLabel} by Treatment Arm</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={transformedLineData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="visitDate" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            {/* --- 3. Dynamically create a Line for each treatment arm --- */}
-            {treatmentArms.map((arm, index) => (
-              <Line
-                key={arm}
-                type="monotone"
-                dataKey={arm} // The dataKey is now the name of the arm itself!
-                stroke={COLORS[index % COLORS.length]}
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-                connectNulls // This is a useful prop to connect lines even if there's a missing data point
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+    // This grid lays out the two charts vertically, each taking up half the height.
+    <div className="w-full h-full grid grid-cols-1 grid-rows-2 gap-4">
+        {/* Top row for Adverse Events */}
+        <div className="flex flex-col">
+            <h4 className="text-center text-sm font-medium text-gray-600 mb-2">Adverse Events Frequency</h4>
+            <div className="relative flex-grow">
+              <Bar options={barOptions} data={barChartData} />
+            </div>
+        </div>
+        {/* Bottom row for Outcome Trend */}
+        <div className="flex flex-col">
+            <h4 className="text-center text-sm font-medium text-gray-600 mb-2">{trial.outcomeLabel}</h4>
+            <div className="relative flex-grow">
+              <Line options={lineOptions} data={lineChartData} />
+            </div>
+        </div>
     </div>
   );
 };

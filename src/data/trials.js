@@ -3,15 +3,17 @@ export const trials = [
     id: 'onco-vex',
     name: 'OncoVex Phase II',
     description: 'A Phase II study of OncoVex for treating non-small cell lung cancer.',
-    filePath: '/data/onco_vex_trial.csv',
-    outcomeMetric: 'tumorSizeChange', // Custom property to help our charts
+    // The 'filePath' is now replaced with 'apiUrl'
+    apiUrl: 'https://adenneal.com/ClinicalTrial/api/getOncovexData.php',
+    outcomeMetric: 'tumorSizeChange',
     outcomeLabel: 'Tumor Size Change (mm)'
   },
   {
     id: 'cardia-stat',
     name: 'CardiaStat Efficacy',
     description: 'A study on the efficacy of CardiaStat in reducing systolic blood pressure.',
-    filePath: '/data/cardia_stat_trial.csv',
+    // You would create a similar PHP file for this trial
+    apiUrl: 'https://adenneal.com/ClinicalTrial/api/getCardiaStatData.php',
     outcomeMetric: 'bloodPressureChange',
     outcomeLabel: 'Blood Pressure Change (mmHg)'
   },
@@ -19,7 +21,8 @@ export const trials = [
     id: 'derma-clear',
     name: 'DermaClear Psoriasis Trial',
     description: 'Evaluating the effectiveness of DermaClear cream on psoriatic lesion count.',
-    filePath: '/data/derma_clear_trial.csv',
+     // And another for this one
+    apiUrl: 'https://adenneal.com/ClinicalTrial/api/getDermaClearData.php',
     outcomeMetric: 'lesionCount',
     outcomeLabel: 'Psoriatic Lesion Count'
   }

@@ -1,109 +1,95 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Bar, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend } from 'chart.js';
 
-// We now accept onFilterChange and activeFilters as props
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
+
+const PIE_COLORS = [
+  'rgb(0, 136, 254)',   // Blue
+  'rgb(0, 196, 159)',   // Green
+  'rgb(255, 187, 40)',  // Yellow
+];
+
 const DemographicsCharts = ({ data, onFilterChange, activeFilters }) => {
-
-  // Age Distribution Logic (no changes needed)
+  // --- DATA PREPARATION ---
   const ageData = data.reduce((acc, patient) => {
     if (!patient.age) return acc;
-    const ageGroup = Math.floor(patient.age / 10) * 10;
-    const groupName = `${ageGroup}-${ageGroup + 9}`;
-    const existingGroup = acc.find(item => item.name === groupName);
-    if (existingGroup) {
-      existingGroup.count++;
-    } else {
-      acc.push({ name: groupName, count: 1 });
-    }
+    const ageGroup = `${Math.floor(patient.age / 10) * 10}s`;
+    acc[ageGroup] = (acc[ageGroup] || 0) + 1;
     return acc;
-  }, []).sort((a, b) => a.name.localeCompare(b.name));
+  }, {});
+  const ageChartData = {
+    labels: Object.keys(ageData).sort(),
+    datasets: [{
+      data: Object.values(ageData),
+      backgroundColor: 'rgba(136, 132, 216, 0.6)',
+    }]
+  };
 
-  // Gender Distribution Logic
   const genderData = data.reduce((acc, patient) => {
     const gender = patient.gender || 'Unknown';
-    const existingGender = acc.find(item => item.name === gender);
-    if (existingGender) {
-      existingGender.value++;
-    } else {
-      acc.push({ name: gender, value: 1 });
-    }
+    acc[gender] = (acc[gender] || 0) + 1;
     return acc;
-  }, []);
-  const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
-
-  // Race Distribution Logic (no changes needed)
+  }, {});
+  const genderChartData = {
+    labels: Object.keys(genderData),
+    datasets: [{
+      data: Object.values(genderData),
+      backgroundColor: PIE_COLORS,
+    }]
+  };
+  
   const raceData = data.reduce((acc, patient) => {
     const race = patient.race || 'Unknown';
-    const existingRace = acc.find(item => item.name === race);
-    if (existingRace) {
-      existingRace.count++;
-    } else {
-      acc.push({ name: race, count: 1 });
-    }
+    acc[race] = (acc[race] || 0) + 1;
     return acc;
-  }, []);
+  }, {});
+  const raceChartData = {
+    labels: Object.keys(raceData),
+    datasets: [{
+        data: Object.values(raceData),
+        backgroundColor: 'rgba(130, 202, 157, 0.6)',
+    }]
+  };
 
-  // Click handler for the pie chart
-  const handleGenderClick = (entry) => {
-    // If the clicked gender is already the active filter, clear it. Otherwise, set it.
-    const newFilter = activeFilters.gender === entry.name ? null : entry.name;
-    onFilterChange('gender', newFilter);
+  // --- CHART OPTIONS ---
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  };
+  
+  const pieOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div className="h-full">
-        <h3 className="text-lg font-semibold mb-2 text-gray-700">Age Distribution</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={ageData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#8884d8" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="h-full">
-        <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold mb-2 text-gray-700">Gender Distribution</h3>
-            {activeFilters.gender && (
-                <button onClick={() => onFilterChange('gender', null)} className="text-xs text-violet-600 hover:underline">
-                    Clear Filter
-                </button>
-            )}
+    <div className="w-full h-full grid grid-cols-1 grid-rows-2 gap-4">
+        {/* Top row with Age and Gender */}
+        <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col">
+                <h4 className="text-center text-sm font-medium text-gray-600 mb-2">Age Distribution</h4>
+                <div className="relative flex-grow">
+                    <Bar options={barOptions} data={ageChartData} />
+                </div>
+            </div>
+            <div className="flex flex-col">
+                <h4 className="text-center text-sm font-medium text-gray-600 mb-2">Gender Distribution</h4>
+                <div className="relative flex-grow">
+                    <Pie options={pieOptions} data={genderChartData} />
+                </div>
+            </div>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie data={genderData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                {genderData.map((entry, index) => (
-                    <Cell 
-                        key={`cell-${index}`} 
-                        fill={PIE_COLORS[index % PIE_COLORS.length]} 
-                        onClick={() => handleGenderClick(entry)}
-                        className="cursor-pointer"
-                        stroke={activeFilters.gender === entry.name ? '#000000' : '#ffffff'}
-                        strokeWidth={activeFilters.gender === entry.name ? 3 : 1}
-                    />
-                ))}
-            </Pie>
-            <Tooltip />
-            <Legend onClick={handleGenderClick} wrapperStyle={{cursor: 'pointer'}} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-       <div className="h-full">
-        <h3 className="text-lg font-semibold mb-2 text-gray-700">Race/Ethnicity Distribution</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={raceData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#82ca9d" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+        {/* Bottom row with Race/Ethnicity */}
+        <div className="flex flex-col">
+            <h4 className="text-center text-sm font-medium text-gray-600 mb-2">Race/Ethnicity</h4>
+            <div className="relative flex-grow">
+                <Bar options={barOptions} data={raceChartData} />
+            </div>
+        </div>
     </div>
   );
 };
