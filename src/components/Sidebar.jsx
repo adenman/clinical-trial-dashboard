@@ -59,9 +59,7 @@ const Sidebar = ({ trials, currentTrial, setCurrentTrial }) => {
           <span>Create Trial</span>
         </NavLink>
       </nav>
-      <div className="mt-auto text-center">
-        <p className="text-xs text-gray-500">The Booth MKE Portfolio</p>
-      </div>
+      
     </aside>
   );
 };
