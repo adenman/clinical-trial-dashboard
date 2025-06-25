@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
+import { useAuth } from '../context/AuthContext'; // Import the auth hook
+
+const SAVE_API_URL = 'https://adenneal.com/ClinicalTrial/api/save_trial.php';
 
 const InputField = ({ label, id, value, onChange, placeholder, required = true }) => (
   <div>
@@ -19,20 +22,24 @@ const InputField = ({ label, id, value, onChange, placeholder, required = true }
 );
 
 const CreateTrial = ({ onTrialCreate }) => {
+  const { user } = useAuth(); // Get the current user
   const [trialName, setTrialName] = useState('');
   const [description, setDescription] = useState('');
   const [outcomeMetric, setOutcomeMetric] = useState('');
   const [outcomeLabel, setOutcomeLabel] = useState('');
   const [csvData, setCsvData] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     if (!csvData.trim()) {
       setError('CSV data cannot be empty.');
+      setLoading(false);
       return;
     }
 
@@ -40,32 +47,51 @@ const CreateTrial = ({ onTrialCreate }) => {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
-      complete: (results) => {
-        if (results.errors.length > 0) {
-          setError('Error parsing CSV data. Please check the format.');
-          console.error("CSV Parsing Errors:", results.errors);
+      complete: async (results) => {
+        if (results.errors.length > 0 || results.data.length === 0) {
+          setError('Error parsing CSV data. Please check the format and ensure it is not empty.');
+          setLoading(false);
           return;
         }
 
-        if (results.data.length === 0) {
-          setError('No valid data found in the CSV text.');
-          return;
-        }
-
-        const newTrial = {
-          id: `user-${Date.now()}`, // Unique ID for the new trial
+        const newTrialMetadata = {
+          id: `user-${user.id}-${Date.now()}`,
           name: trialName,
           description,
           outcomeMetric,
           outcomeLabel,
-          data: results.data, // Store the parsed data directly
         };
 
-        onTrialCreate(newTrial);
-        navigate('/'); // Redirect to the dashboard after creation
+        const payload = {
+            metadata: newTrialMetadata,
+            patients: results.data
+        };
+
+        try {
+            const response = await fetch(SAVE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const responseData = await response.json();
+            if (!response.ok) {
+                throw new Error(responseData.error || 'Failed to save trial.');
+            }
+            
+            // This now includes the parsed patient data for immediate use
+            onTrialCreate({ ...newTrialMetadata, data: results.data });
+            navigate('/');
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
       },
       error: () => {
         setError('A critical error occurred while parsing the CSV data.');
+        setLoading(false);
       }
     });
   };
@@ -73,7 +99,7 @@ const CreateTrial = ({ onTrialCreate }) => {
   return (
     <div className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold text-gray-900 mb-2">Create a New Trial</h2>
-      <p className="text-gray-600 mb-6">Define the trial parameters and paste your patient data in CSV format below.</p>
+      <p className="text-gray-600 mb-6">Define the trial parameters and paste your patient data in CSV format below. This trial will be saved to your account.</p>
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-6" role="alert">
@@ -108,9 +134,10 @@ const CreateTrial = ({ onTrialCreate }) => {
         <div className="text-right">
           <button
             type="submit"
-            className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
+            disabled={loading}
+            className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:bg-violet-300"
           >
-            Create Trial and View Dashboard
+            {loading ? 'Saving Trial...' : 'Save Trial and View Dashboard'}
           </button>
         </div>
       </form>
