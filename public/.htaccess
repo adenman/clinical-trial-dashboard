@@ -6,6 +6,7 @@
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_FILENAME} !-l
   RewriteRule . /ClinicalTrial/index.html [L]
+  RewriteCond %{REQUEST_URI} !^/ClinicalTrial/api/ [NC]
 </IfModule>
 
 # --- ADD THESE LINES FOR CACHE BUSTING ---
